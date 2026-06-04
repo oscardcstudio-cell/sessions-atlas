@@ -27,7 +27,7 @@
     "id": "startup-box",
     "titre": "Startup Box",
     "priorite": 4,
-    "statut": "backlog",
+    "statut": "fait",
     "description": "Câbler les bons agents aux bons moments du plan de construction de boîte (company/ + build-company skill). Dépend de l'audit modules.",
     "dependances": ["audit-modules"]
   },
