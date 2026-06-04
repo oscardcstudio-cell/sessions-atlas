@@ -527,7 +527,7 @@ function renderChantiers(){
   for(const st of order){
     const ch=cols[st]||[];
     const colBg=st==='en-cours'?'var(--clay)':st==='backlog'?'#4f4b44':'#3fb950';
-    html+='<div class="chantier-col"><div class="chantier-chead" style="border-bottom:2px solid '+colBg';padding-bottom:8px"><span style="width:8px;height:8px;border-radius:50%;background:'+colBg+'"></span>'+labels[st]+'<span class="n">'+ch.length+'</span></div>';
+    html+='<div class="chantier-col"><div class="chantier-chead" style="border-bottom:2px solid '+colBg+';padding-bottom:8px"><span style="width:8px;height:8px;border-radius:50%;background:'+colBg+'"></span>'+labels[st]+'<span class="n">'+ch.length+'</span></div>';
     for(const c of ch.sort((a,b)=>a.priorite-b.priorite)){
       html+='<div class="chantier-card '+c.statut+'"><div><span class="chantier-prio">P'+c.priorite+'</span><span style="color:var(--fg);font-weight:600;font-size:11.5px">'+esc(c.titre)+'</span></div>'+
         '<div class="chantier-desc">'+esc(c.description)+'</div>';
