@@ -1,5 +1,5 @@
 @echo off
-cd /d "C:\dev\claude\sessions-atlas"
+cd /d "C:\dev\claude\oscardcstudio\sessions-atlas"
 echo Regeneration Atlas...
 node generate-atlas.mjs
 echo OK — ouverture dans le navigateur...

@@ -8,14 +8,15 @@
 
 import fs from 'node:fs';
 import path from 'node:path';
+import url from 'node:url';
 import os from 'node:os';
 import { execSync } from 'node:child_process';
 
 const HOME = os.homedir();
 const CLAUDE = path.join(HOME, '.claude');
 const PROJECTS = path.join(CLAUDE, 'projects');
-const META_ROOT = 'C:/dev/claude';
-const OUT_DIR = path.join(META_ROOT, 'sessions-atlas');
+const META_ROOT = 'C:/dev/claude'; // racine des projets à scanner
+const OUT_DIR = path.dirname(url.fileURLToPath(import.meta.url)); // dossier du script
 
 const DAYS = (() => {
   const i = process.argv.indexOf('--days');
