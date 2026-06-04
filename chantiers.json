@@ -1,0 +1,50 @@
+[
+  {
+    "id": "recherche-deepness",
+    "titre": "Recherche internet + niveau deepness",
+    "priorite": 1,
+    "statut": "en-cours",
+    "description": "Hook UserPromptSubmit qui propose /deep-research selon contexte (light/medium/deep). Fix rapide.",
+    "dependances": []
+  },
+  {
+    "id": "sante-fichiers",
+    "titre": "Santé fichiers / refactor auto",
+    "priorite": 2,
+    "statut": "en-cours",
+    "description": "Vue du système health existant (auto-debt-resolve, hooks) dans Atlas. Section Health.",
+    "dependances": []
+  },
+  {
+    "id": "audit-modules",
+    "titre": "Audit modules/agents réutilisables",
+    "priorite": 3,
+    "statut": "en-cours",
+    "description": "Cartographie exhaustive de tous les modules, agents, scripts réutilisables cross-projets. Output: MODULES_CATALOG.md",
+    "dependances": []
+  },
+  {
+    "id": "startup-box",
+    "titre": "Startup Box",
+    "priorite": 4,
+    "statut": "backlog",
+    "description": "Câbler les bons agents aux bons moments du plan de construction de boîte (company/ + build-company skill). Dépend de l'audit modules.",
+    "dependances": ["audit-modules"]
+  },
+  {
+    "id": "atlas-plus",
+    "titre": "Atlas++ (conversations bloquantes)",
+    "priorite": 5,
+    "statut": "fait",
+    "description": "Détection bloquantes (dernier msg assistant) + agents actifs (tool_calls sans tool_result). Section Attention + badges sidebar + cartes kanban.",
+    "dependances": []
+  },
+  {
+    "id": "audit-mecene",
+    "titre": "Audit Mécène → Startup Box",
+    "priorite": 6,
+    "statut": "backlog",
+    "description": "Mécène (subvention_match) comme cas d'usage test de la Startup Box. Rentre dans P4.",
+    "dependances": ["startup-box"]
+  }
+]
