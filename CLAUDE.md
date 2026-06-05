@@ -14,16 +14,24 @@ Scan `~/.claude/projects/` → génère `atlas.html` (interface dark style Claud
 ## Usage
 
 ```bash
-node generate-atlas.mjs           # fenêtre 14 jours
+start.bat                         # Windows : lance Atlas + WebUI (tout en un)
+node generate-atlas.mjs           # regen atlas seul (14 jours)
 node generate-atlas.mjs --days 30 # fenêtre custom
-open-atlas.bat                    # Windows : génère + ouvre dans le browser
 ```
+
+- **Atlas** → `http://localhost:5199` (dashboard kanban cross-projets)
+- **WebUI** → `http://localhost:3000` (interface chat Claude.ai style)
 
 ## Fichiers
 
 - `generate-atlas.mjs` — script Node (zéro dépendance, built-ins only)
+- `server.mjs` — serveur HTTP Atlas (port 5199, regen async)
 - `chantiers.json` — roadmap des chantiers (éditable manuellement)
-- `open-atlas.bat` — raccourci Windows
+- `start.bat` — lance les 3 processus (Atlas + WebUI backend + WebUI frontend)
+- `webui/` — interface chat style Claude.ai (fork sugyan/claude-code-webui redesigné)
+  - `webui/frontend/` — React + Tailwind (port 3000)
+  - `webui/backend/` — Node/Deno + Hono (port 8080)
+  - `webui/shared/` — types partagés
 - `atlas.html` + `atlas-index.json` — **générés, non versionnés**
 
 ## Config
