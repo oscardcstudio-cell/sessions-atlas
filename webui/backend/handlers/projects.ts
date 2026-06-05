@@ -27,9 +27,20 @@ export async function handleProjectsRequest(c: Context) {
       if (config.projects && typeof config.projects === "object") {
         const projectPaths = Object.keys(config.projects);
 
+        // Deduplicate paths (Windows stores both / and \\ variants)
+        const seen = new Set<string>();
+        const uniquePaths = projectPaths.filter((p) => {
+          const normalized = p.replace(/\\/g, "/").toLowerCase();
+          if (seen.has(normalized)) return false;
+          seen.add(normalized);
+          return true;
+        });
+
         // Get encoded names for each project, only include projects with history
+        // Filter out worktrees (they are temporary branches, not real projects)
         const projects: ProjectInfo[] = [];
-        for (const path of projectPaths) {
+        for (const path of uniquePaths) {
+          if (path.includes(".claude/worktrees") || path.includes(".claude\\worktrees")) continue;
           const encodedName = await getEncodedProjectName(path);
           // Only include projects that have history directories
           if (encodedName) {
