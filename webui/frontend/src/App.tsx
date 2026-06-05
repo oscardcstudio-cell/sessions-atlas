@@ -1,7 +1,7 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { AppLayout } from "./components/AppLayout";
 import { ChatPage } from "./components/ChatPage";
-import { EmptyState } from "./components/EmptyState";
+import { AtlasBoard } from "./components/AtlasBoard";
 import { SettingsProvider } from "./contexts/SettingsContext";
 
 function App() {
@@ -10,7 +10,7 @@ function App() {
       <Router>
         <Routes>
           <Route element={<AppLayout />}>
-            <Route path="/" element={<EmptyState />} />
+            <Route path="/" element={<AtlasBoard />} />
             <Route path="/projects/*" element={<ChatPage />} />
           </Route>
         </Routes>

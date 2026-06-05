@@ -24,7 +24,24 @@ export interface AtlasProject {
   branch: string;
   dirty: number;
   debt: number;
+  collision?: boolean;
   sessions: AtlasSession[];
+}
+
+export interface AtlasChantier {
+  titre: string;
+  description?: string;
+  statut: 'en-cours' | 'backlog' | 'fait';
+  priorite: number;
+  dependances?: string[];
+}
+
+export interface AtlasRegistry {
+  skills: string[];
+  agents: string[];
+  hooks: string[];
+  packages: string[];
+  dashboards: string[];
 }
 
 export interface AtlasData {
@@ -33,6 +50,8 @@ export interface AtlasData {
   stats: { projects: number; sessions: number; active: number; bloquante: number; agentsRunning: number; collisions: number };
   buckets: string[];
   projects: AtlasProject[];
+  chantiers?: AtlasChantier[];
+  registry?: AtlasRegistry;
 }
 
 export interface PlanStep {
