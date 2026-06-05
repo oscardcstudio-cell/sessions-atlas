@@ -413,7 +413,7 @@ h1{font-size:14px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;
 .chantier-deps{font-size:10px;color:var(--muted);margin-top:6px;padding-top:6px;border-top:1px solid var(--border)}
 .chantier-badge{display:inline-block;font-size:9.5px;color:var(--fg);background:var(--panel2);border:1px solid var(--border);
   border-radius:3px;padding:2px 5px;margin:2px 2px 0 0}
-.card{background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:10px 11px;margin-bottom:9px;scroll-margin:80px}
+.card{background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:10px 11px;margin-bottom:9px;scroll-margin:80px;cursor:pointer}
 .card.coll{border-color:var(--clay-dim);box-shadow:0 0 0 1px var(--clay-dim) inset}
 .card.bloquante{border-color:var(--amber);border-top-width:2px}
 .card.agents-live{border-color:#3a7070}
@@ -524,7 +524,7 @@ function renderAttention(){
   if(blq.length){
     html+='<div class="attn-section attn-blq"><div class="attn-h">⏸ Attend ta réponse ('+blq.length+')</div><div class="attn-list">';
     for(const {s,p} of blq){
-      html+='<div class="attn-card" data-card="'+sid(s)+'" data-proj="'+esc(p.path)+'">'+
+      html+='<div class="attn-card" data-card="'+sid(s)+'" data-proj="'+esc(p.path)+'" data-session-id="'+esc(s.id)+'">'+
         '<div class="at" style="display:flex;align-items:center;gap:6px">'+esc(base(p.path))+
         '<button class="copy-id-btn" data-session-id="'+esc(s.id)+'" title="Copier l\'ID de session">⎘</button></div>'+
         '<div class="ap">'+esc(s.title)+'</div>'+
@@ -535,7 +535,7 @@ function renderAttention(){
   if(agts.length){
     html+='<div class="attn-section attn-agts"><div class="attn-h">⚙ Agents en cours ('+agts.length+')</div><div class="attn-list">';
     for(const {s,p} of agts){
-      html+='<div class="attn-card" data-card="'+sid(s)+'" data-proj="'+esc(p.path)+'">'+
+      html+='<div class="attn-card" data-card="'+sid(s)+'" data-proj="'+esc(p.path)+'" data-session-id="'+esc(s.id)+'">'+
         '<div class="at">'+esc(base(p.path))+'</div>'+
         '<div class="ap">'+esc(s.title)+'</div>'+
         '<div class="am">'+(s.agentsRunningCount||'?')+' agent(s) · '+ago(s.lastTs)+'</div></div>';
@@ -618,7 +618,7 @@ function renderBoard(){
       const cardClass='card'+(p.collision?' coll':'')+(s.bloquante?' bloquante':s.agentsRunning?' agents-live':'');
       const copyIdBtn=s.bloquante?'<button class="copy-id-btn" data-session-id="'+esc(s.id)+'" title="Copier l\'ID de session">⎘</button>':'';
       const statusBadge=s.bloquante?'<span class="attend-badge">⏸ attend</span>':s.agentsRunning?'<span class="agents-live-badge">⚙ '+s.agentsRunningCount+'</span>':'';
-      html+='<div class="'+cardClass+'" id="'+sid(s)+'"><div class="ctop"><span class="bdot b-'+p.bucket+'"></span>'+
+      html+='<div class="'+cardClass+'" id="'+sid(s)+'" data-session-id="'+esc(s.id)+'" data-cwd="'+esc(p.path)+'"><div class="ctop"><span class="bdot b-'+p.bucket+'"></span>'+
         '<span class="proj">'+esc(base(p.path))+'</span>'+(p.collision?'<span class="coll-badge">⚠ collision</span>':'')+statusBadge+copyIdBtn+'</div>'+
         '<div class="ctitle">'+esc(s.title)+'</div><div class="cmeta">'+
         (p.branch?'<span class="branch">'+esc(p.branch)+'</span>':'')+'<span class="model">'+esc(shortModel(s.model))+'</span>'+
@@ -649,9 +649,19 @@ document.addEventListener('click',e=>{
     return;
   }
   const attn=e.target.closest('.attn-card[data-card]');
-  if(attn){projF=attn.getAttribute('data-proj');rerender();
-    const el=document.getElementById(attn.getAttribute('data-card'));
-    if(el){el.scrollIntoView({behavior:'smooth',block:'center'});el.classList.remove('flash');void el.offsetWidth;el.classList.add('flash');}return;}
+  if(attn){
+    const id=attn.getAttribute('data-session-id');
+    const path=attn.getAttribute('data-proj');
+    if(id&&path){window.open('http://localhost:3000/projects/'+path.replace(/\\/g,'/')+'?sessionId='+encodeURIComponent(id),'_blank');}
+    return;
+  }
+  const card=e.target.closest('.card[data-session-id]');
+  if(card&&!e.target.closest('.chip')&&!e.target.closest('.copy-id-btn')){
+    const id=card.getAttribute('data-session-id');
+    const path=card.getAttribute('data-cwd');
+    if(id&&path){window.open('http://localhost:3000/projects/'+path.replace(/\\/g,'/')+'?sessionId='+encodeURIComponent(id),'_blank');}
+    return;
+  }
   const grp=e.target.closest('.grp-h');
   if(grp){const pth=grp.getAttribute('data-proj');projF=(projF===pth?null:pth);rerender();return;}
   const row=e.target.closest('.srow[data-card]');

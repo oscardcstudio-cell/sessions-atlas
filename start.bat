@@ -43,5 +43,5 @@ if errorlevel 1 (
 :: Backend pret — attendre 2s que le frontend Vite soit aussi pret
 timeout /t 2 /nobreak >nul
 
-:: Ouvrir UNE SEULE fenetre : le WebUI (projets + chat)
-start http://localhost:3000
+:: Ouvrir l'Atlas (dashboard principal — les cards ouvrent le WebUI chat en nouvelle tab)
+start http://localhost:5199
