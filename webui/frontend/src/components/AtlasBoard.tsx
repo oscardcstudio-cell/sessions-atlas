@@ -148,7 +148,7 @@ export function AtlasBoard() {
 
   const openSession = (p: AtlasProject, s: AtlasSession) => {
     const normPath = p.path.replace(/\\/g, "/");
-    navigate(`/projects${normPath}?sessionId=${encodeURIComponent(s.id)}`);
+    navigate(`/projects/${normPath}?sessionId=${encodeURIComponent(s.id)}`);
   };
 
   if (loading) {
