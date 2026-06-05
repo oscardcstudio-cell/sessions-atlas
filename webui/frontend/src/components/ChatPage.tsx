@@ -16,6 +16,7 @@ import { useAutoHistoryLoader } from "../hooks/useHistoryLoader";
 import { SettingsButton } from "./SettingsButton";
 import { SettingsModal } from "./SettingsModal";
 import { HistoryButton } from "./chat/HistoryButton";
+import { ConvHeader } from "./ConvHeader";
 import { ChatInput } from "./chat/ChatInput";
 import { ChatMessages } from "./chat/ChatMessages";
 import { HistoryView } from "./HistoryView";
@@ -434,8 +435,8 @@ export function ChatPage() {
   }, [isLoading, currentRequestId, handleAbort]);
 
   return (
-    <div className="min-h-screen bg-[#212121] dark:bg-[#212121] transition-colors duration-300">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 h-screen flex flex-col">
+    <div className="h-full flex flex-col bg-[#212121] dark:bg-[#212121] transition-colors duration-300">
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 h-full flex flex-col w-full">
         {/* Header */}
         <div className="flex items-center justify-between py-3 sm:py-4 mb-2 flex-shrink-0 border-b border-[#2a2a2a]">
           <div className="flex items-center gap-3">
@@ -457,47 +458,18 @@ export function ChatPage() {
                 <ChevronLeftIcon className="w-5 h-5 text-[#9a9a9a]" />
               </button>
             )}
-            <div>
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={handleBackToProjects}
-                  className="text-[#ececec] text-base font-semibold hover:text-[#c96442] transition-colors"
-                  aria-label="Back to project selection"
-                >
-                  Claude
-                </button>
-                {(isHistoryView || sessionId) && (
-                  <>
-                    <span className="text-[#555] select-none">›</span>
-                    <span className="text-[#9a9a9a] text-base font-medium">
-                      {isHistoryView ? "History" : "Conversation"}
-                    </span>
-                  </>
-                )}
-              </div>
-              {workingDirectory && (
-                <div className="flex items-center gap-2 mt-0.5">
-                  <button
-                    onClick={handleBackToProjectChat}
-                    className="text-[#6a6a6a] hover:text-[#9a9a9a] transition-colors font-mono text-xs"
-                    aria-label={`Return to new chat in ${workingDirectory}`}
-                  >
-                    {workingDirectory.split(/[\\/]/).filter(Boolean).pop() ?? workingDirectory}
-                  </button>
-                  {sessionId && (
-                    <span className="text-xs text-[#555]">
-                      · {sessionId.substring(0, 8)}…
-                    </span>
-                  )}
-                </div>
-              )}
-            </div>
+            {isHistoryView && (
+              <span className="text-[#9a9a9a] text-base font-medium">History</span>
+            )}
           </div>
           <div className="flex items-center gap-2">
             {!isHistoryView && <HistoryButton onClick={handleHistoryClick} />}
             <SettingsButton onClick={handleSettingsClick} />
           </div>
         </div>
+
+        {/* Conv Header — projet, branche, step, agents */}
+        {!isHistoryView && <ConvHeader />}
 
         {/* Main Content */}
         {isHistoryView ? (

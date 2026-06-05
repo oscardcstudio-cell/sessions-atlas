@@ -17,6 +17,11 @@ import { handleHistoriesRequest } from "./handlers/histories.ts";
 import { handleConversationRequest } from "./handlers/conversations.ts";
 import { handleChatRequest } from "./handlers/chat.ts";
 import { handleAbortRequest } from "./handlers/abort.ts";
+import {
+  handleAtlasRequest,
+  handleAtlasRegenRequest,
+  handlePlanRequest,
+} from "./handlers/atlas.ts";
 import { logger } from "./utils/logger.ts";
 import { readBinaryFile } from "./utils/fs.ts";
 
@@ -71,6 +76,12 @@ export function createApp(
   );
 
   app.post("/api/chat", (c) => handleChatRequest(c, requestAbortControllers));
+
+  app.get("/api/atlas", (c) => handleAtlasRequest(c));
+
+  app.post("/api/atlas/regen", (c) => handleAtlasRegenRequest(c));
+
+  app.get("/api/plan", (c) => handlePlanRequest(c));
 
   // Static file serving with SPA fallback
   // Serve static assets (CSS, JS, images, etc.)
