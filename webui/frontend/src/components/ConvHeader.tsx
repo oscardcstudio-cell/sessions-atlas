@@ -35,7 +35,9 @@ export function ConvHeader({ modelOverride }: ConvHeaderProps) {
     }).catch(() => {});
 
     // Fetch plan
-    fetch(`/api/plan?path=${encodeURIComponent(workingDirectory)}`).then(r => r.json()).then(setPlan).catch(() => {});
+    if (workingDirectory) {
+      fetch(`/api/plan?path=${encodeURIComponent(workingDirectory)}`).then(r => r.json()).then(setPlan).catch(() => {});
+    }
   }, [workingDirectory, sessionId]);
 
   if (!workingDirectory) return null;

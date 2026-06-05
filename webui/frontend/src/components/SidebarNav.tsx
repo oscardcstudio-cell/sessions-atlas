@@ -63,7 +63,9 @@ export function SidebarNav() {
   };
 
   const sortedProjects = atlas ? [...atlas.projects].sort((a, b) => {
-    const latest = (p: AtlasProject) => Math.max(...p.sessions.map(s => new Date(s.lastTs).getTime()));
+    const latest = (p: AtlasProject) => p.sessions?.length > 0
+      ? Math.max(...p.sessions.map(s => new Date(s.lastTs).getTime()))
+      : 0;
     return latest(b) - latest(a);
   }) : [];
 
@@ -79,7 +81,7 @@ export function SidebarNav() {
           <div className="px-4 py-3 text-[#555] text-xs">Chargement…</div>
         ) : sortedProjects.map(project => {
           const isOpen = !collapsed.has(project.path);
-          const sessions = [...project.sessions]
+          const sessions = [...(project.sessions || [])]
             .sort((a, b) => new Date(b.lastTs).getTime() - new Date(a.lastTs).getTime())
             .slice(0, 25);
           const hasBloquante = sessions.some(s => s.bloquante);

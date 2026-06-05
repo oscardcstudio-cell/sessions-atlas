@@ -170,7 +170,7 @@ export function AtlasBoard() {
   }
 
   const K = data.stats;
-  const allCards = data.projects.flatMap((p) => p.sessions.map((s) => ({ s, p })));
+  const allCards = data.projects.flatMap((p) => (p.sessions || []).map((s) => ({ s, p })));
   const visible = (p: AtlasProject) => bucketF === "all" || p.bucket === bucketF;
   const bloquantes = allCards.filter((c) => c.s.bloquante && visible(c.p));
   const agtsLive = allCards.filter((c) => c.s.agentsRunning && visible(c.p));
