@@ -36,16 +36,36 @@ function bucketOf(cwd) {
   return 'autre';
 }
 
+const _gitCache = new Map(); // cwd → gitInfo result
 function gitInfo(cwd) {
-  if (!cwd || !safe(() => fs.existsSync(cwd), false)) return { branch: null, dirty: 0, repo: null };
+  if (!cwd) return { branch: null, dirty: 0, repo: null };
+  // Normalize to git root if already known
+  const norm = cwd.replace(/\//g, '\\').toLowerCase();
+  if (_gitCache.has(norm)) return _gitCache.get(norm);
+  if (!safe(() => fs.existsSync(cwd), false)) {
+    const r = { branch: null, dirty: 0, repo: null };
+    _gitCache.set(norm, r); return r;
+  }
   const run = (cmd) => safe(() => execSync(`git -C "${cwd}" ${cmd}`, { stdio: ['ignore', 'pipe', 'ignore'] }).toString().trim(), '');
   const inside = run('rev-parse --is-inside-work-tree');
-  if (inside !== 'true') return { branch: null, dirty: 0, repo: null };
+  if (inside !== 'true') {
+    const r = { branch: null, dirty: 0, repo: null };
+    _gitCache.set(norm, r); return r;
+  }
+  const repo = (run('rev-parse --show-toplevel') || cwd).replace(/\//g, '\\');
+  const repoNorm = repo.toLowerCase();
+  // If repo root already cached, reuse (avoids running git multiple times for same repo)
+  if (_gitCache.has(repoNorm)) {
+    const r = _gitCache.get(repoNorm);
+    _gitCache.set(norm, r); return r;
+  }
   const branch = run('branch --show-current') || '(detached)';
   const status = run('status --porcelain');
   const dirty = status ? status.split('\n').filter(Boolean).length : 0;
-  const repo = run('rev-parse --show-toplevel') || cwd;
-  return { branch, dirty, repo: repo.replace(/\//g, '\\') };
+  const r = { branch, dirty, repo };
+  _gitCache.set(norm, r);
+  _gitCache.set(repoNorm, r);
+  return r;
 }
 
 function statusFromTs(lastTs) {
@@ -296,7 +316,8 @@ function build() {
 
 // ---------- 6. render — chrome Claude Code (sidebar + board kanban) ----------
 function renderHtml(data) {
-  const json = JSON.stringify(data);
+  // Escape </script> in JSON to prevent premature script tag closure
+  const json = JSON.stringify(data).replace(/<\/script>/gi, '<\\/script>');
   return `<!doctype html><html lang="fr"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Sessions Atlas</title>
@@ -441,14 +462,60 @@ h1{font-size:14px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;
 .foot{margin-top:26px;font-size:11px;color:var(--faint)}
 .empty{color:var(--faint);font-size:12px;padding:12px;text-align:center}
 @media(max-width:760px){body{flex-direction:column;overflow:auto}.side{width:100%;height:auto}.main{height:auto}.board{grid-template-columns:1fr}}
+
+/* ---- chat panel ---- */
+.chat-panel{position:fixed;right:0;top:0;bottom:0;width:400px;background:var(--side);border-left:1px solid var(--border);
+  display:flex;flex-direction:column;transform:translateX(100%);transition:transform .22s cubic-bezier(.4,0,.2,1);z-index:100}
+.chat-panel.open{transform:translateX(0)}
+.chat-head{padding:14px 16px 12px;border-bottom:1px solid var(--border2);flex:none;position:relative}
+.chat-head-proj{font-size:10.5px;color:var(--clay);text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px}
+.chat-head-title{font-size:12.5px;font-weight:600;color:var(--fg);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-right:32px}
+.chat-head-meta{font-size:10.5px;color:var(--faint);margin-top:3px}
+.chat-close{position:absolute;top:10px;right:10px;background:none;border:none;color:var(--faint);font-size:16px;cursor:pointer;padding:4px 8px;border-radius:5px;line-height:1}
+.chat-close:hover{color:var(--fg);background:var(--side2)}
+.chat-msgs{flex:1;overflow-y:auto;padding:14px 14px 8px;display:flex;flex-direction:column;gap:10px}
+.msg{display:flex;flex-direction:column;max-width:88%;animation:msgin .15s ease}
+@keyframes msgin{from{opacity:0;transform:translateY(4px)}}
+.msg-user{align-self:flex-end}
+.msg-claude{align-self:flex-start}
+.msg-bubble{padding:8px 12px;border-radius:9px;font-size:12.5px;line-height:1.55;white-space:pre-wrap;word-break:break-word}
+.msg-user .msg-bubble{background:var(--clay-dim);color:#f0ebe4;border-radius:9px 9px 2px 9px}
+.msg-claude .msg-bubble{background:var(--panel2);color:var(--fg);border:1px solid var(--border);border-radius:9px 9px 9px 2px}
+.typing-wrap{align-self:flex-start}
+.typing{display:inline-flex;gap:4px;align-items:center;padding:8px 12px;background:var(--panel2);border:1px solid var(--border);border-radius:9px 9px 9px 2px}
+.typing span{width:5px;height:5px;border-radius:50%;background:var(--muted);animation:dot 1.2s ease-in-out infinite}
+.typing span:nth-child(2){animation-delay:.2s}.typing span:nth-child(3){animation-delay:.4s}
+@keyframes dot{0%,80%,100%{opacity:.2}40%{opacity:1}}
+.chat-welcome{color:var(--faint);font-size:11.5px;text-align:center;padding:24px 12px;line-height:1.6;align-self:center}
+.chat-input-wrap{padding:12px 14px;border-top:1px solid var(--border2);flex:none}
+.chat-textarea{width:100%;background:var(--panel2);border:1px solid var(--border);border-radius:8px;
+  color:var(--fg);font:inherit;font-size:12.5px;padding:9px 12px;resize:none;min-height:60px;max-height:160px;outline:none;display:block}
+.chat-textarea:focus{border-color:var(--clay-dim)}
+.chat-footer{display:flex;align-items:center;gap:8px;margin-top:8px}
+.chat-send{background:var(--clay-dim);color:#f0ebe4;border:none;border-radius:7px;padding:7px 16px;font:inherit;font-size:12.5px;cursor:pointer;font-weight:600}
+.chat-send:hover{background:var(--clay)}.chat-send:disabled{opacity:.4;cursor:not-allowed}
+.chat-cost{font-size:10px;color:var(--faint);margin-left:auto}
+/* Reply buttons — hidden by default, shown in server-mode */
+.reply-btn{font-size:10px;color:var(--amber);border:1px solid #5a4a1a;background:#26200d;border-radius:4px;
+  padding:2px 7px;cursor:pointer;font-weight:600;display:none;flex:none;white-space:nowrap;line-height:1.5}
+.reply-btn:hover{background:#3a2e12;border-color:var(--amber)}
+.server-mode .reply-btn{display:inline-block}
+.new-conv-btn{font-size:11px;background:var(--panel2);border:1px solid var(--border);color:var(--muted);border-radius:5px;
+  padding:4px 10px;cursor:pointer;display:none;white-space:nowrap}
+.new-conv-btn:hover{color:var(--fg);border-color:var(--clay-dim)}
+.server-mode .new-conv-btn{display:inline-block}
+.refresh-btn{font-size:13px;background:none;border:none;color:var(--faint);cursor:pointer;padding:2px 6px;border-radius:4px;margin-left:auto}
+.refresh-btn:hover{color:var(--clay);background:var(--side2)}
+.refresh-btn.spinning{animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
 </style></head><body>
 <aside class="side">
   <div class="side-top">
-    <div class="brand"><span class="ast">✱</span> Sessions Atlas <span class="ver">atlas</span></div>
+    <div class="brand"><span class="ast">✱</span> Sessions Atlas <span class="ver">atlas</span><button class="refresh-btn" id="refreshBtn" style="display:none">↻</button></div>
     <input class="search" id="search" placeholder="Filtrer projets / sessions…">
   </div>
   <div class="side-list" id="sidelist"></div>
-  <div class="side-foot"><span class="av">O</span> oscar · <span id="footstat"></span></div>
+  <div class="side-foot"><span class="av">O</span> oscar · <span id="footstat"></span><button class="new-conv-btn" id="newConvBtn">+ Conv</button></div>
 </aside>
 <main class="main">
   <h1>Sessions Atlas</h1>
@@ -461,6 +528,22 @@ h1{font-size:14px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;
   <div class="reg" id="reg"></div>
   <p class="foot" id="foot"></p>
 </main>
+<div class="chat-panel" id="chatPanel">
+  <div class="chat-head">
+    <div class="chat-head-proj" id="chatProj"></div>
+    <div class="chat-head-title" id="chatTitle"></div>
+    <div class="chat-head-meta" id="chatMeta"></div>
+    <button class="chat-close" id="chatClose">✕</button>
+  </div>
+  <div class="chat-msgs" id="chatMsgs"><div class="chat-welcome">Sélectionne une session bloquante ⏸ ou démarre une nouvelle conversation.</div></div>
+  <div class="chat-input-wrap">
+    <textarea class="chat-textarea" id="chatInput" placeholder="Ton message… (Entrée = envoyer, Shift+Entrée = saut de ligne)" rows="3"></textarea>
+    <div class="chat-footer">
+      <button class="chat-send" id="chatSend" disabled>Envoyer</button>
+      <span class="chat-cost" id="chatCost"></span>
+    </div>
+  </div>
+</div>
 <script>
 const D=${json};
 const esc=s=>(s||'').replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
@@ -496,7 +579,8 @@ function renderAttention(){
     html+='<div class="attn-section attn-blq"><div class="attn-h">⏸ Attend ta réponse ('+blq.length+')</div><div class="attn-list">';
     for(const {s,p} of blq){
       html+='<div class="attn-card" data-card="'+sid(s)+'" data-proj="'+esc(p.path)+'">'+
-        '<div class="at">'+esc(base(p.path))+'</div>'+
+        '<div class="at" style="display:flex;align-items:center;gap:6px">'+esc(base(p.path))+
+        '<button class="reply-btn" data-reply-session="'+esc(s.id)+'" data-reply-cwd="'+esc(s.cwd||'')+'" data-reply-title="'+esc(s.title)+'" data-reply-proj="'+esc(base(p.path))+'">Reply</button></div>'+
         '<div class="ap">'+esc(s.title)+'</div>'+
         '<div class="am">'+ago(s.lastTs)+' · '+esc(shortModel(s.model))+'</div></div>';
     }
@@ -587,8 +671,9 @@ function renderBoard(){
     for(const {s,p} of items){
       const cardClass='card'+(p.collision?' coll':'')+(s.bloquante?' bloquante':s.agentsRunning?' agents-live':'');
       const statusBadge=s.bloquante?'<span class="attend-badge">⏸ attend</span>':s.agentsRunning?'<span class="agents-live-badge">⚙ '+s.agentsRunningCount+'</span>':'';
+      const replyBtn=s.bloquante?'<button class="reply-btn" data-reply-session="'+esc(s.id)+'" data-reply-cwd="'+esc(s.cwd||'')+'" data-reply-title="'+esc(s.title)+'" data-reply-proj="'+esc(base(p.path))+'">Reply ⏸</button>':'';
       html+='<div class="'+cardClass+'" id="'+sid(s)+'"><div class="ctop"><span class="bdot b-'+p.bucket+'"></span>'+
-        '<span class="proj">'+esc(base(p.path))+'</span>'+(p.collision?'<span class="coll-badge">⚠ collision</span>':'')+statusBadge+'</div>'+
+        '<span class="proj">'+esc(base(p.path))+'</span>'+(p.collision?'<span class="coll-badge">⚠ collision</span>':'')+statusBadge+replyBtn+'</div>'+
         '<div class="ctitle">'+esc(s.title)+'</div><div class="cmeta">'+
         (p.branch?'<span class="branch">'+esc(p.branch)+'</span>':'')+'<span class="model">'+esc(shortModel(s.model))+'</span>'+
         '<span>'+ago(s.lastTs)+'</span><span>'+s.userMsgs+' msg</span>'+
@@ -611,6 +696,7 @@ rerender();
 document.getElementById('search').addEventListener('input',e=>{q=e.target.value.toLowerCase().trim();renderSide();});
 
 document.addEventListener('click',e=>{
+  if(e.target.closest('.reply-btn'))return; // handled by chat panel
   const attn=e.target.closest('.attn-card[data-card]');
   if(attn){projF=attn.getAttribute('data-proj');rerender();
     const el=document.getElementById(attn.getAttribute('data-card'));
@@ -638,6 +724,184 @@ document.getElementById('reg').innerHTML='<h2>Ce qui existe (registre — vérif
   .map(([t,a])=>'<div class="regcol"><h3>'+t+'<span class="c">'+a.length+'</span></h3><ul>'+
     a.slice(0,14).map(x=>'<li>'+esc(x)+'</li>').join('')+(a.length>14?'<li>…+'+(a.length-14)+'</li>':'')+'</ul></div>').join('')+'</div>';
 document.getElementById('foot').textContent='atlas-index.json = source de vérité (lisible par Claude aussi). Regen : node sessions-atlas/generate-atlas.mjs';
+
+// ---- chat panel (server-mode only) ----
+if(window.__SERVER__){
+  document.body.classList.add('server-mode');
+
+  let currentSession=null; // {id, cwd, title, proj}
+  let isStreaming=false;
+
+  const chatPanel=document.getElementById('chatPanel');
+  const chatMsgs=document.getElementById('chatMsgs');
+  const chatInput=document.getElementById('chatInput');
+  const chatSend=document.getElementById('chatSend');
+  const chatProjEl=document.getElementById('chatProj');
+  const chatTitleEl=document.getElementById('chatTitle');
+  const chatMetaEl=document.getElementById('chatMeta');
+  const chatClose=document.getElementById('chatClose');
+  const chatCost=document.getElementById('chatCost');
+
+  function openChat(session){
+    currentSession=session;
+    chatProjEl.textContent=session.proj||'—';
+    chatTitleEl.textContent=session.title||'(sans titre)';
+    chatMetaEl.textContent=session.id?'resume '+session.id.slice(0,12)+'…':'nouvelle session';
+    chatCost.textContent='';
+    chatMsgs.innerHTML='<div class="chat-welcome">'+(session.id?'Reprise de la session — tape ton message.':'Nouvelle conv dans '+esc(session.proj||'')+'.')+'</div>';
+    chatSend.disabled=false;
+    chatPanel.classList.add('open');
+    document.querySelector('.main').style.paddingRight='414px';
+    setTimeout(()=>chatInput.focus(),50);
+  }
+
+  function closeChat(){
+    chatPanel.classList.remove('open');
+    document.querySelector('.main').style.paddingRight='';
+    currentSession=null;
+    chatSend.disabled=true;
+  }
+
+  chatClose.addEventListener('click',closeChat);
+  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&chatPanel.classList.contains('open'))closeChat();});
+
+  function removeWelcome(){const w=chatMsgs.querySelector('.chat-welcome');if(w)w.remove();}
+
+  function appendMsg(role,text){
+    removeWelcome();
+    const div=document.createElement('div');
+    div.className='msg msg-'+role;
+    const bub=document.createElement('div');
+    bub.className='msg-bubble';
+    bub.textContent=text;
+    div.appendChild(bub);
+    chatMsgs.appendChild(div);
+    chatMsgs.scrollTop=chatMsgs.scrollHeight;
+    return bub;
+  }
+
+  let typingEl=null;
+  function showTyping(){
+    if(typingEl)return;
+    removeWelcome();
+    const div=document.createElement('div');
+    div.className='typing-wrap';
+    div.innerHTML='<div class="typing"><span></span><span></span><span></span></div>';
+    chatMsgs.appendChild(div);
+    chatMsgs.scrollTop=chatMsgs.scrollHeight;
+    typingEl=div;
+  }
+  function removeTyping(){if(typingEl){typingEl.remove();typingEl=null;}}
+
+  async function sendMessage(){
+    if(isStreaming||!currentSession)return;
+    const text=chatInput.value.trim();
+    if(!text)return;
+    chatInput.value='';
+    chatInput.style.height='auto';
+    appendMsg('user',text);
+    showTyping();
+    chatSend.disabled=true;
+    isStreaming=true;
+    let claudeBubble=null;
+    let claudeText='';
+    try{
+      const resp=await fetch('/api/send',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({message:text,sessionId:currentSession.id||null,cwd:currentSession.cwd||null})
+      });
+      if(!resp.ok){throw new Error('HTTP '+resp.status);}
+      const reader=resp.body.getReader();
+      const decoder=new TextDecoder();
+      let buf='';
+      while(true){
+        const {done,value}=await reader.read();
+        if(done)break;
+        buf+=decoder.decode(value,{stream:true});
+        const lines=buf.split('\\n');
+        buf=lines.pop();
+        for(const line of lines){
+          if(line.indexOf('data: ')!==0)continue;
+          let ev;try{ev=JSON.parse(line.slice(6));}catch(ex){continue;}
+          if(ev.type==='text'){
+            removeTyping();
+            if(!claudeBubble){
+              const d=document.createElement('div');d.className='msg msg-claude';
+              const b=document.createElement('div');b.className='msg-bubble';
+              d.appendChild(b);chatMsgs.appendChild(d);claudeBubble=b;
+            }
+            claudeText+=ev.text;
+            claudeBubble.textContent=claudeText;
+            chatMsgs.scrollTop=chatMsgs.scrollHeight;
+          }
+          if(ev.type==='session'&&ev.sessionId){
+            currentSession=Object.assign({},currentSession,{id:ev.sessionId});
+            chatMetaEl.textContent='session '+ev.sessionId.slice(0,12)+'…';
+          }
+          if(ev.type==='done'){
+            if(ev.sessionId){
+              currentSession=Object.assign({},currentSession,{id:ev.sessionId});
+              chatMetaEl.textContent='session '+ev.sessionId.slice(0,12)+'…';
+            }
+            if(ev.cost!=null)chatCost.textContent='$'+ev.cost.toFixed(4);
+          }
+        }
+      }
+    }catch(err){
+      removeTyping();
+      appendMsg('claude','[Erreur: '+err.message+']');
+    }finally{
+      removeTyping();
+      isStreaming=false;
+      chatSend.disabled=false;
+      chatInput.focus();
+    }
+  }
+
+  chatSend.addEventListener('click',sendMessage);
+  chatInput.addEventListener('keydown',e=>{
+    if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMessage();}
+  });
+  chatInput.addEventListener('input',()=>{
+    chatInput.style.height='auto';
+    chatInput.style.height=Math.min(chatInput.scrollHeight,160)+'px';
+  });
+
+  // Refresh button
+  const refreshBtn=document.getElementById('refreshBtn');
+  refreshBtn.style.display='block';
+  refreshBtn.addEventListener('click',async ()=>{
+    refreshBtn.classList.add('spinning');
+    refreshBtn.disabled=true;
+    try{
+      await fetch('/api/regen');
+      location.reload();
+    }catch(e){
+      refreshBtn.classList.remove('spinning');
+      refreshBtn.disabled=false;
+    }
+  });
+
+  // New conversation
+  document.getElementById('newConvBtn').addEventListener('click',()=>{
+    const proj=D.projects[0];
+    openChat({id:null,cwd:proj?proj.path:null,title:'Nouvelle conversation',proj:proj?base(proj.path):'meta'});
+  });
+
+  // Reply buttons (delegated — fires before main click handler which guards against .reply-btn)
+  document.addEventListener('click',e=>{
+    const btn=e.target.closest('.reply-btn[data-reply-session]');
+    if(btn){
+      openChat({
+        id:btn.getAttribute('data-reply-session'),
+        cwd:btn.getAttribute('data-reply-cwd'),
+        title:btn.getAttribute('data-reply-title'),
+        proj:btn.getAttribute('data-reply-proj')
+      });
+    }
+  });
+}
 </script></body></html>`;
 }
 

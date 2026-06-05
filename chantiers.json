@@ -1,5 +1,13 @@
 [
   {
+    "id": "atlas-chat",
+    "titre": "Atlas Chat — interface Claude native",
+    "priorite": 0,
+    "statut": "fait",
+    "description": "server.mjs (Node, zéro dep) + chat panel slide-in : reply aux bloquantes ⏸, nouvelle conv, SSE streaming claude -p. Regen async (89ms page load). Bouton ↻ Refresh explicite.",
+    "dependances": ["atlas-plus"]
+  },
+  {
     "id": "recherche-deepness",
     "titre": "Recherche internet + niveau deepness",
     "priorite": 1,
