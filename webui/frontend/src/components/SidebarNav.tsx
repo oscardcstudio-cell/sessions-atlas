@@ -91,7 +91,7 @@ export function SidebarNav() {
                 className="w-full flex items-center gap-2 px-3 py-1.5 text-left hover:bg-[#1e1e1e] transition-colors group"
               >
                 <span className={`text-[9px] text-[#444] transition-transform duration-150 ${isOpen ? 'rotate-90' : ''}`}>▶</span>
-                <span className="text-[#8a8a8a] text-xs font-medium truncate flex-1">{base(project.path)}</span>
+                <span className="text-[#c4c4c4] text-[13px] font-semibold truncate flex-1">{base(project.path)}</span>
                 {hasBloquante && <span className="text-[10px] text-[#d4a843] flex-shrink-0">⏸</span>}
                 <span
                   onClick={(e) => newChat(e, project)}
@@ -118,10 +118,10 @@ export function SidebarNav() {
                       session.status === 'idle' ? 'bg-[#444]' : 'bg-[#2a2a2a]'
                     }`} />
                     <div className="flex-1 min-w-0">
-                      <div className={`text-xs truncate leading-tight ${isActive ? 'text-[#ececec]' : 'text-[#9a9a9a]'}`}>
+                      <div className={`text-[11px] truncate leading-tight ${isActive ? 'text-[#ececec]' : 'text-[#7a7a7a]'}`}>
                         {session.title || '(sans titre)'}
                       </div>
-                      <div className="text-[10px] text-[#444] mt-0.5 flex items-center gap-1">
+                      <div className="font-mono text-[10px] text-[#3d3d3d] mt-0.5 flex items-center gap-1">
                         {timeAgo(session.lastTs)}
                         {session.agentsRunning && <span className="text-[#6ec6c6]">⚙</span>}
                       </div>

@@ -46,25 +46,42 @@ export function ConvHeader({ modelOverride }: ConvHeaderProps) {
   const agents = sessionMeta?.agents ?? [];
 
   return (
-    <div className="flex items-center gap-3 px-4 py-1.5 border-b border-[#2a2a2a] bg-[#1a1a1a] text-xs overflow-hidden flex-shrink-0">
-      <span className="text-[#ececec] font-medium flex-shrink-0">{projectName}</span>
+    <div className="flex items-center gap-2 px-4 py-1.5 border-b border-[#2a2a2a] bg-[#1a1a1a] overflow-hidden flex-shrink-0 min-w-0">
+      <span className="font-mono text-[12px] text-[#c4c4c4] font-medium flex-shrink-0">{projectName}</span>
       {sessionMeta?.gitBranch && sessionMeta.gitBranch !== 'main' && (
-        <span className="text-[#555] font-mono flex-shrink-0">{sessionMeta.gitBranch}</span>
+        <>
+          <span className="text-[#333] flex-shrink-0">/</span>
+          <span className="font-mono text-[11px] text-[#d4a843] flex-shrink-0">{sessionMeta.gitBranch}</span>
+        </>
       )}
-      {modelShort && <span className="text-[#555] flex-shrink-0">{modelShort}</span>}
+      {modelShort && (
+        <>
+          <span className="text-[#333] flex-shrink-0">/</span>
+          <span className="font-mono text-[11px] text-[#7fa6c9] flex-shrink-0">{modelShort}</span>
+        </>
+      )}
       {activeStep && (
-        <span className="flex items-center gap-1 text-[#d4a843] min-w-0 flex-shrink">
-          <span className="flex-shrink-0">▶ {activeStep.id}</span>
-          <span className="truncate text-[#7a7a7a]">{activeStep.title.replace(/\s*\[.*?\]\s*/g, ' ').trim()}</span>
-        </span>
+        <>
+          <span className="text-[#333] flex-shrink-0">/</span>
+          <span className="flex items-center gap-1 min-w-0 flex-shrink">
+            <span className="font-mono text-[11px] text-[#d4a843] flex-shrink-0">▶ {activeStep.id}</span>
+            <span className="text-[11px] text-[#666] truncate">{activeStep.title.replace(/\s*\[.*?\]\s*/g, ' ').trim()}</span>
+          </span>
+        </>
       )}
       {agents.length > 0 && (
         <div className="flex items-center gap-1 flex-shrink-0 ml-auto">
-          {agents.map(a => (
-            <span key={a.name} className="px-1.5 py-0.5 bg-[#252525] rounded text-[10px] text-[#6a6a6a]">
-              {a.name}×{a.n}
-            </span>
-          ))}
+          {agents.slice(0, 3).map(a => {
+            const shortName = a.name.split(/[-\s]/)[0].slice(0, 12);
+            return (
+              <span key={a.name} title={`${a.name} ×${a.n}`} className="px-1.5 py-0.5 bg-[#252525] rounded font-mono text-[10px] text-[#5a5a5a]">
+                {shortName}<span className="text-[#3a3a3a]">×{a.n}</span>
+              </span>
+            );
+          })}
+          {agents.length > 3 && (
+            <span className="font-mono text-[10px] text-[#3a3a3a]">+{agents.length - 3}</span>
+          )}
         </div>
       )}
     </div>

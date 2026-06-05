@@ -72,7 +72,7 @@ function SessionCard({
         )}
       </div>
       <div
-        className="text-[12.5px] text-[#ece8e1] mb-[7px] leading-[1.35]"
+        className="text-[13px] text-[#ece8e1] mb-[7px] leading-[1.35]"
         style={{
           display: "-webkit-box",
           WebkitLineClamp: 2,
@@ -82,7 +82,7 @@ function SessionCard({
       >
         {s.title}
       </div>
-      <div className="flex gap-[8px] flex-wrap text-[10.5px] text-[#726c62]">
+      <div className="flex gap-[8px] flex-wrap font-mono text-[10.5px] text-[#726c62]">
         {p.branch && (
           <span className="before:content-['⎇_']">{p.branch}</span>
         )}
@@ -193,7 +193,7 @@ export function AtlasBoard() {
       <div className="px-[26px] py-[22px] pb-[70px]">
         {/* Header */}
         <div className="flex items-center gap-3 mb-1">
-          <h1 className="text-[11px] font-semibold tracking-[.04em] uppercase text-[#a39d92] m-0">
+          <h1 className="text-[14px] font-semibold tracking-[.12em] uppercase text-[#ece8e1] m-0">
             Sessions Atlas
           </h1>
           <button
@@ -203,7 +203,7 @@ export function AtlasBoard() {
             ↻
           </button>
         </div>
-        <p className="text-[12px] text-[#726c62] mb-[18px]">
+        <p className="font-mono text-[11px] text-[#726c62] tracking-[.08em] mb-[24px]">
           Généré {new Date(data.generatedAt).toLocaleString("fr-FR")} · fenêtre{" "}
           {data.windowDays} jours
         </p>
@@ -223,11 +223,11 @@ export function AtlasBoard() {
               className="bg-[#262624] border border-[#39362f] rounded-[9px] px-[15px] py-[10px] min-w-[92px]"
             >
               <div
-                className={`text-[22px] font-semibold ${alert ? "text-[#d97757]" : ""}`}
+                className={`text-[22px] font-semibold leading-none ${alert ? "text-[#d97757]" : "text-[#ece8e1]"}`}
               >
                 {v as number}
               </div>
-              <div className="text-[10.5px] text-[#a39d92] uppercase tracking-[.05em]">
+              <div className="font-mono text-[11px] text-[#726c62] uppercase tracking-[.18em] mt-[6px]">
                 {l as string}
               </div>
             </div>
@@ -239,23 +239,25 @@ export function AtlasBoard() {
           <div className="flex flex-col gap-[12px] mb-[18px]">
             {bloquantes.length > 0 && (
               <div className="bg-[#262624] border border-[#5a4a1a] rounded-[9px] px-[16px] py-[12px]">
-                <div className="text-[11px] uppercase tracking-[.06em] font-semibold text-[#e0a458] mb-[10px] flex items-center gap-[7px]">
-                  ⏸ Attend ta réponse ({bloquantes.length})
+                <div className="text-[12px] font-semibold text-[#e0a458] mb-[4px]">
+                  ⏸ Attend ta réponse
+                </div>
+                <div className="font-mono text-[10px] text-[#726c62] uppercase tracking-[.16em] mb-[10px]">{bloquantes.length} sessions
                 </div>
                 <div className="flex flex-wrap gap-[8px]">
                   {bloquantes.map(({ s, p }) => (
                     <div
                       key={s.id}
-                      className="bg-[#1c1b1a] border border-[#39362f] hover:border-[#e0a458] rounded-[7px] px-[11px] py-[7px] cursor-pointer min-w-[160px] max-w-[240px]"
+                      className="bg-[#1c1b1a] border-l-2 border-l-[#d97757] border border-[#39362f] hover:border-[#e0a458] rounded-[7px] pl-[10px] pr-[11px] py-[8px] cursor-pointer min-w-[160px] max-w-[240px]"
                       onClick={() => openSession(p, s)}
                     >
-                      <div className="text-[11px] font-semibold text-[#e0a458] mb-[3px] overflow-hidden text-ellipsis whitespace-nowrap">
+                      <div className="text-[12px] font-semibold text-[#c4c4c4] mb-[2px] overflow-hidden text-ellipsis whitespace-nowrap">
                         {base(p.path)}
                       </div>
-                      <div className="text-[11px] text-[#ece8e1] overflow-hidden text-ellipsis whitespace-nowrap">
+                      <div className="text-[11px] text-[#8a8a8a] overflow-hidden text-ellipsis whitespace-nowrap leading-snug">
                         {s.title}
                       </div>
-                      <div className="text-[10px] text-[#726c62] mt-[2px]">
+                      <div className="font-mono text-[10px] text-[#4a4a4a] mt-[6px]">
                         {ago(s.lastTs)} · {shortModel(s.model)}
                       </div>
                     </div>
@@ -265,23 +267,25 @@ export function AtlasBoard() {
             )}
             {agtsLive.length > 0 && (
               <div className="bg-[#262624] border border-[#2a5050] rounded-[9px] px-[16px] py-[12px]">
-                <div className="text-[11px] uppercase tracking-[.06em] font-semibold text-[#6ec6c6] mb-[10px]">
-                  ⚙ Agents en cours ({agtsLive.length})
+                <div className="text-[12px] font-semibold text-[#6ec6c6] mb-[4px]">
+                  ⚙ Agents en cours
+                </div>
+                <div className="font-mono text-[10px] text-[#726c62] uppercase tracking-[.16em] mb-[10px]">{agtsLive.length} sessions
                 </div>
                 <div className="flex flex-wrap gap-[8px]">
                   {agtsLive.map(({ s, p }) => (
                     <div
                       key={s.id}
-                      className="bg-[#1c1b1a] border border-[#39362f] hover:border-[#3a7070] rounded-[7px] px-[11px] py-[7px] cursor-pointer min-w-[160px] max-w-[240px]"
+                      className="bg-[#1c1b1a] border-l-2 border-l-[#3a7070] border border-[#39362f] hover:border-[#3a7070] rounded-[7px] pl-[10px] pr-[11px] py-[8px] cursor-pointer min-w-[160px] max-w-[240px]"
                       onClick={() => openSession(p, s)}
                     >
-                      <div className="text-[11px] font-semibold text-[#6ec6c6] mb-[3px] overflow-hidden text-ellipsis whitespace-nowrap">
+                      <div className="text-[12px] font-semibold text-[#c4c4c4] mb-[2px] overflow-hidden text-ellipsis whitespace-nowrap">
                         {base(p.path)}
                       </div>
-                      <div className="text-[11px] text-[#ece8e1] overflow-hidden text-ellipsis whitespace-nowrap">
+                      <div className="text-[11px] text-[#8a8a8a] overflow-hidden text-ellipsis whitespace-nowrap leading-snug">
                         {s.title}
                       </div>
-                      <div className="text-[10px] text-[#726c62] mt-[2px]">
+                      <div className="font-mono text-[10px] text-[#4a4a4a] mt-[6px]">
                         {s.agentsRunningCount || "?"} agent(s) · {ago(s.lastTs)}
                       </div>
                     </div>
@@ -401,10 +405,10 @@ export function AtlasBoard() {
                 key={st}
                 className={`bg-[#1c1b1a] border border-[#39362f] rounded-[9px] p-[11px_11px_14px] min-h-[110px] c-${st}`}
               >
-                <div className="flex items-center gap-[8px] mx-[4px] mb-[11px] text-[11.5px] uppercase tracking-[.07em] text-[#a39d92] font-semibold">
+                <div className="flex items-center gap-[8px] mx-[4px] mb-[14px] text-[12px] uppercase tracking-[.1em] text-[#ece8e1] font-semibold">
                   <span className={`w-[9px] h-[9px] rounded-full ${colDot[st]}`} />
                   {lab}
-                  <span className="ml-auto text-[11.5px] text-[#726c62] bg-[#262624] border border-[#39362f] rounded-[20px] px-[8px] py-[1px]">
+                  <span className="ml-auto font-mono text-[11px] text-[#726c62] bg-[#262624] border border-[#39362f] rounded-[20px] px-[8px] py-[1px]">
                     {items.length}
                   </span>
                 </div>
