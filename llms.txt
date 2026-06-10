@@ -1,0 +1,23 @@
+# sessions-atlas
+
+> Visualiseur cross-conversations pour Claude Code. Scan `~/.claude/projects/` → kanban des sessions par statut, détection des bloquantes (⏸) et agents actifs (⚙), section Chantiers.
+
+## Configuration
+- [CLAUDE.md](CLAUDE.md): Usage, fichiers clés, config META_ROOT, logique de détection bloquantes/agents
+- [chantiers.json](chantiers.json): Roadmap des chantiers du projet (éditable manuellement)
+
+## Scripts principaux
+- `generate-atlas.mjs`: Générateur Atlas (zéro dépendance, built-ins only) — scan 14 jours par défaut
+- `server.mjs`: Serveur HTTP Atlas sur port 5199 — regen async, chat panel SSE
+- `start.bat`: Lance les 3 processus en une commande (Atlas + WebUI backend + WebUI frontend)
+
+## WebUI (fork sugyan/claude-code-webui redesigné)
+- [webui/frontend/](webui/frontend/): React + Tailwind — interface chat style Claude.ai (port 3000)
+- [webui/frontend/src/hooks/](webui/frontend/src/hooks/): Hooks chat (streaming, permissions, state) et SSE
+- [webui/frontend/src/utils/](webui/frontend/src/utils/): Utilitaires (messageTypes, pathUtils, storage, time)
+- `webui/backend/`: Node/Deno + Hono — backend API (port 8080)
+- `webui/shared/`: Types partagés frontend/backend
+
+## Générés (non versionnés)
+- `atlas.html`: Dashboard HTML généré par generate-atlas.mjs
+- `atlas-index.json`: Index JSON des sessions
