@@ -29,6 +29,7 @@ export interface ProjectsResponse {
 // Conversation history types
 export interface ConversationSummary {
   sessionId: string;
+  title?: string;
   startTime: string;
   lastTime: string;
   messageCount: number;

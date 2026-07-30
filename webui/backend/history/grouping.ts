@@ -60,6 +60,7 @@ function createConversationSummary(
 ): ConversationSummary {
   return {
     sessionId: conversationFile.sessionId,
+    title: conversationFile.title,
     startTime: conversationFile.startTime,
     lastTime: conversationFile.lastTime,
     messageCount: conversationFile.messageCount,

@@ -29,6 +29,7 @@ export interface RawHistoryLine {
 // TODO: Remove once all references are updated to use ConversationHistory
 export interface ConversationFile {
   sessionId: string;
+  title?: string;
   filePath: string;
   messages: RawHistoryLine[];
   messageIds: Set<string>;
@@ -61,11 +62,19 @@ async function parseHistoryFile(
     let startTime = "";
     let lastTime = "";
     let lastMessagePreview = "";
+    let title = "";
 
     for (const line of lines) {
       try {
         const parsed = JSON.parse(line) as RawHistoryLine;
         messages.push(parsed);
+
+        // Extract custom title
+        if ((parsed as unknown as Record<string, unknown>).type === "custom-title") {
+          const raw = parsed as unknown as Record<string, unknown>;
+          const t = (raw.title as string) || (raw.customTitle as string) || ((raw.message as Record<string, unknown>)?.title as string);
+          if (t) title = t;
+        }
 
         // Track message IDs from assistant messages
         if (parsed.message?.role === "assistant" && parsed.message?.id) {
@@ -109,6 +118,7 @@ async function parseHistoryFile(
 
     return {
       sessionId,
+      title: title || undefined,
       filePath,
       messages,
       messageIds,

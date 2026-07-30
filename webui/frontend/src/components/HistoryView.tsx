@@ -137,7 +137,7 @@ export function HistoryView({ encodedName }: HistoryViewProps) {
               <div className="flex items-start justify-between">
                 <div className="flex-1 min-w-0">
                   <h3 className="text-sm font-medium text-slate-900 dark:text-slate-100 truncate">
-                    Session: {conversation.sessionId.substring(0, 8)}...
+                    {conversation.title || `Session: ${conversation.sessionId.substring(0, 8)}…`}
                   </h3>
                   <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
                     {new Date(conversation.startTime).toLocaleString()} •{" "}
