@@ -1,0 +1,7 @@
+{
+  "database": "dolt",
+  "backend": "dolt",
+  "dolt_mode": "embedded",
+  "dolt_database": "sessions_atlas",
+  "project_id": "54c5a2f2-6278-48ba-a222-91b9598cbf34"
+}
