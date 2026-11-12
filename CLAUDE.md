@@ -13,3 +13,6 @@ Outil de visualisation cross-conversations pour Claude Code (scan de `~/.claude/
 ## Détection
 - Session bloquante : le dernier message du JSONL est de type `assistant` (Claude attend Oscar). Seuls les vrais messages texte comptent (filtrer CRLF et injections de hooks).
 - Agent actif : un `tool_use` de type `Agent` sans `tool_result` correspondant. Reset sur les sessions `stale` (> 12 h).
+
+## Tâches = Beads
+Les tâches restantes vivent dans Beads (`bd ready`, `bd list`), pas dans un fichier de notes. Une tâche finie : `bd close <id>`.
